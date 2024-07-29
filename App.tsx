@@ -1,10 +1,14 @@
-// src/Calculator.js
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Modal, FlatList, Image } from 'react-native';
+
+// Import the image you want to use for the history button
+import historyImage from './Src/images/download.png'; // Update the path based on where you place the image
 
 const Calculator = () => {
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
+  const [history, setHistory] = useState([]);
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const handleInput = (value) => {
     if (value === '=') {
@@ -19,10 +23,21 @@ const Calculator = () => {
 
   const calculateResult = () => {
     try {
-      setResult(eval(input).toString());
+      const calculatedResult = eval(input).toString();
+      setResult(calculatedResult);
+      setHistory([...history, { input, result: calculatedResult }]);
     } catch (error) {
       setResult('Error');
     }
+  };
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    toggleModal();
   };
 
   const renderButton = (value, style) => (
@@ -36,12 +51,18 @@ const Calculator = () => {
   );
 
   const buttonValues = [
-    ['C', '', '', '/'],
+    ['C', '+/-', '%', '/'],
     ['7', '8', '9', '*'],
     ['4', '5', '6', '-'],
     ['1', '2', '3', '+'],
-    ['0', '.', '=', ''],
+    ['0', '.', '='],
   ];
+
+  const renderHistoryItem = ({ item }) => (
+    <View style={styles.historyItem}>
+      <Text style={styles.historyText}>{item.input} = {item.result}</Text>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,12 +71,47 @@ const Calculator = () => {
         <Text style={styles.resultText}>{result}</Text>
       </View>
       <View style={styles.buttonsContainer}>
+        <View style={styles.historyButtonContainer}>
+          <TouchableOpacity style={styles.historyButton} onPress={toggleModal}>
+            <Image source={historyImage} style={styles.historyImage} />
+          </TouchableOpacity>
+        </View>
         {buttonValues.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.buttonRow}>
-            {row.map((button) => renderButton(button, button === '=' ? styles.equalsButton : {}))}
+            {row.map((button) =>
+              button === '0'
+                ? renderButton(button, styles.zeroButton)
+                : renderButton(button, 
+                    button === '=' ? styles.equalsButton 
+                    : ['/', '*', '-', '+'].includes(button) ? styles.operatorButton 
+                    : styles.specialButton
+                  )
+            )}
           </View>
         ))}
       </View>
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={toggleModal}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <FlatList
+              data={history}
+              renderItem={renderHistoryItem}
+              keyExtractor={(item, index) => index.toString()}
+            />
+            <TouchableOpacity style={styles.clearButton} onPress={clearHistory}>
+              <Text style={styles.clearButtonText}>Clear History</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeButton} onPress={toggleModal}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -93,14 +149,86 @@ const styles = StyleSheet.create({
     margin: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 50,
+  },
+  zeroButton: {
+    flex: 2,
+    margin: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#333',
     borderRadius: 50,
+  },
+  operatorButton: {
+    backgroundColor: '#fa8231',
   },
   equalsButton: {
     backgroundColor: '#fa8231',
   },
+  specialButton: {
+    backgroundColor: '#555',
+  },
   buttonText: {
     fontSize: 30,
+    color: '#fff',
+  },
+  historyButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+    width: 90,
+    height: 55,
+  },
+  historyImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingTop: 300,
+  },
+  modalContent: {
+    backgroundColor: '#000',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    padding: 20,
+    width: '70%',
+    height: '100%',
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+  historyItem: {
+    borderBottomColor: '#555',
+    borderBottomWidth: 1,
+    paddingVertical: 10,
+  },
+  historyText: {
+    fontSize: 20,
+    color: '#fff',
+  },
+  clearButton: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#fa8231',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#fff',
+  },
+  closeButton: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#333',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
     color: '#fff',
   },
 });
