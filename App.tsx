@@ -82,9 +82,10 @@ const Calculator = () => {
               button === '0'
                 ? renderButton(button, styles.zeroButton)
                 : renderButton(button, 
-                    button === '=' ? styles.equalsButton 
-                    : ['/', '*', '-', '+'].includes(button) ? styles.operatorButton 
-                    : styles.specialButton
+                    ['=', '/', '*', '-', '+'].includes(button) ? styles.operatorButton 
+                    : ['C', '+/-', '%'].includes(button) ? styles.lightGrayButton
+                    : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.'].includes(button) ? styles.numericButton
+                    : {}
                   )
             )}
           </View>
@@ -159,14 +160,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
     borderRadius: 50,
   },
+  numericButton: {
+    backgroundColor: '#333',
+  },
   operatorButton: {
     backgroundColor: '#fa8231',
   },
-  equalsButton: {
-    backgroundColor: '#fa8231',
-  },
-  specialButton: {
-    backgroundColor: '#555',
+  lightGrayButton: {
+    backgroundColor: '#d3d3d3', // Light gray color
   },
   buttonText: {
     fontSize: 30,
